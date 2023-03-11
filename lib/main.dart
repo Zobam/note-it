@@ -5,6 +5,8 @@ import 'package:note_app_mobile/home_page.dart';
 import 'package:note_app_mobile/note_class.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+
   runApp(NoteApp());
 }
 
