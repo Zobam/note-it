@@ -6,6 +6,7 @@ import 'package:note_app_mobile/add_note.dart';
 import 'package:note_app_mobile/note_class.dart';
 import 'package:note_app_mobile/note_details.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
+import 'package:note_app_mobile/utilities/dialogs.dart';
 
 void main(List<String> args) {
   runApp(HomePage());
@@ -61,47 +62,60 @@ class _HomePageState extends State<HomePage> {
                 case ConnectionState.active:
                   if (snapshot.hasData) {
                     final allNotes = snapshot.data as List<DatabaseNote>;
-                    return ListView.builder(
-                      itemCount: allNotes.length,
-                      itemBuilder: (context, index) {
-                        final currentNote = allNotes[index];
-                        return ListTile(
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                currentNote.title.toUpperCase(),
-                                style: const TextStyle(
-                                  color: Color.fromARGB(255, 4, 81, 119),
-                                  fontWeight: FontWeight.bold,
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: allNotes.length,
+                            itemBuilder: (context, index) {
+                              final currentNote = allNotes[index];
+                              return ListTile(
+                                title: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      currentNote.title.toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Color.fromARGB(255, 4, 81, 119),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Text(
+                                      currentNote.note,
+                                      maxLines: 1,
+                                      softWrap: true,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
-                              ),
-                              Text(
-                                currentNote.note,
-                                maxLines: 1,
-                                softWrap: true,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                                trailing: IconButton(
+                                    onPressed: () async {
+                                      var shouldDelete =
+                                          await showDeleteDialog(context);
+                                      debugPrint(
+                                          'about to delete note ${currentNote.id}');
+                                      debugPrint(shouldDelete.toString());
+                                      if (shouldDelete == true) {
+                                        await _noteService.deleteNote(
+                                            id: currentNote.id);
+                                      }
+                                    },
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Color.fromARGB(255, 88, 7, 7),
+                                    )),
+                                onTap: () {
+                                  debugPrint('get note details');
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (BuildContext context) {
+                                    return NoteDetails(note: currentNote);
+                                  }));
+                                },
+                              );
+                            },
                           ),
-                          trailing: IconButton(
-                              onPressed: () async {
-                                var shouldDelete =
-                                    await showDeleteDialog(context);
-                                debugPrint(
-                                    'about to delete note ${currentNote.id}');
-                                debugPrint(shouldDelete.toString());
-                                if (shouldDelete == true) {
-                                  await _noteService.deleteNote(
-                                      id: currentNote.id);
-                                }
-                              },
-                              icon: const Icon(
-                                Icons.delete,
-                                color: Color.fromARGB(255, 88, 7, 7),
-                              )),
-                        );
-                      },
+                        ),
+                      ],
                     );
                   } else {
                     return const CircularProgressIndicator();
@@ -122,29 +136,4 @@ class _HomePageState extends State<HomePage> {
       throw Exception("Failed to load note");
     }
   } */
-}
-
-Future<bool?> showDeleteDialog(BuildContext context) {
-  return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Delete this note?'),
-          content: const Text('Are you sure you want to delete this note'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Delete note'),
-            ),
-          ],
-        );
-      });
 }

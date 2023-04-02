@@ -4,9 +4,9 @@ import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:sqflite/sqflite.dart';
 
 class AddNote extends StatefulWidget {
-  final int? noteId;
+  final DatabaseNote? note;
 
-  const AddNote({super.key, this.noteId});
+  const AddNote({super.key, this.note});
 
   @override
   State<AddNote> createState() => _AddNoteState();
@@ -23,6 +23,7 @@ class _AddNoteState extends State<AddNote> {
   void initState() {
     _notesService = NoteService();
     textController = TextEditingController();
+    textController.text = widget.note?.note ?? '';
     super.initState();
   }
 
@@ -32,7 +33,7 @@ class _AddNoteState extends State<AddNote> {
       return;
     }
     final text = textController.text;
-    await _notesService.updateNote(
+    _note = await _notesService.updateNote(
       note: note,
       text: text,
     );
@@ -65,7 +66,8 @@ class _AddNoteState extends State<AddNote> {
     final note = _note;
     final text = textController.text;
     if (note != null && text.isNotEmpty) {
-      await _notesService.createNote(title: 'title', note: text);
+      // await _notesService.createNote(title: 'title', note: text);
+      await _notesService.updateNote(note: note, text: text);
     }
   }
 

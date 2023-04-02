@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -60,7 +61,7 @@ class NoteHelper {
       _db!.insert(tableName, note.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     } catch (_) {
-      print('error occurred');
+      debugPrint('error occurred');
     }
   }
 
