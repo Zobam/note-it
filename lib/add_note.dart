@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:note_app_mobile/main.dart';
 import 'package:note_app_mobile/note_class.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
-import 'package:sqflite/sqflite.dart';
 
 class AddNote extends StatefulWidget {
   final DatabaseNote? note;
@@ -14,7 +14,7 @@ class AddNote extends StatefulWidget {
 
 class _AddNoteState extends State<AddNote> {
   late final TextEditingController textController;
-  final NoteHelper _noteHelper = NoteHelper();
+  late final TextEditingController titleController;
   late Note currentNote;
   DatabaseNote? _note;
   late final NoteService _notesService;
@@ -23,11 +23,13 @@ class _AddNoteState extends State<AddNote> {
   void initState() {
     _notesService = NoteService();
     textController = TextEditingController();
+    titleController = TextEditingController();
     textController.text = widget.note?.note ?? '';
+    titleController.text = widget.note?.title ?? '';
     super.initState();
   }
 
-  void _textControllerListener() async {
+  /* void _textControllerListener() async {
     final note = _note;
     if (note == null) {
       return;
@@ -37,44 +39,49 @@ class _AddNoteState extends State<AddNote> {
       note: note,
       text: text,
     );
-  }
+  } */
 
-  void _setupTextControllerListener() {
+  /*  void _setupTextControllerListener() {
     textController.removeListener(_textControllerListener);
     textController.addListener(_textControllerListener);
-  }
+  } */
 
   Future<DatabaseNote> createNewNote() async {
-    final existingNote = _note;
+    final existingNote = widget.note;
+    final text = textController.text;
+    final title = titleController.text;
     if (existingNote != null) {
-      return existingNote;
+      debugPrint('updating note');
+      return _notesService.updateNote(
+          note: existingNote, text: text, title: title);
     }
+    debugPrint('creating new note');
     return _notesService.createNote(
-      title: 'first note',
-      note: 'this took so long',
+      title: title,
+      note: text,
     );
   }
 
-  void _deleteNoteIfTextIsEmpty() {
+/*   void _deleteNoteIfTextIsEmpty() {
     final note = _note;
     if (textController.text.isEmpty && note != null) {
       _notesService.deleteNote(id: note.id);
     }
-  }
+  } */
 
-  void _saveNoteIfTextIsNotEmpty() async {
+  /*  void _saveNoteIfTextIsNotEmpty() async {
     final note = _note;
     final text = textController.text;
     if (note != null && text.isNotEmpty) {
       // await _notesService.createNote(title: 'title', note: text);
       await _notesService.updateNote(note: note, text: text);
     }
-  }
+  } */
 
   @override
   void dispose() {
-    _deleteNoteIfTextIsEmpty();
-    _saveNoteIfTextIsNotEmpty();
+    // _deleteNoteIfTextIsEmpty();
+    // _saveNoteIfTextIsNotEmpty();
     textController.dispose();
     super.dispose();
   }
@@ -92,25 +99,39 @@ class _AddNoteState extends State<AddNote> {
           icon: const Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: FutureBuilder(
-        future: createNewNote(),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              _note = snapshot.data;
-              _setupTextControllerListener();
-              return TextField(
+      body: SingleChildScrollView(
+        child: Container(
+          padding: const EdgeInsets.all(30),
+          child: Column(
+            children: [
+              TextField(
+                controller: titleController,
+                keyboardType: TextInputType.multiline,
+                maxLines: null,
+                decoration: const InputDecoration(
+                  hintText: 'enter your note title',
+                ),
+              ),
+              TextField(
                 controller: textController,
                 keyboardType: TextInputType.multiline,
                 maxLines: null,
                 decoration: const InputDecoration(
                   hintText: 'start typing your note',
                 ),
-              );
-            default:
-              return const CircularProgressIndicator();
-          }
-        },
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    await createNewNote();
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (BuildContext context) {
+                      return NoteApp();
+                    }));
+                  },
+                  child: const Text('Save Note')),
+            ],
+          ),
+        ),
       ),
     );
   }

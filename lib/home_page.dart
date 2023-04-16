@@ -1,9 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:note_app_mobile/add_note.dart';
-import 'package:note_app_mobile/note_class.dart';
 import 'package:note_app_mobile/note_details.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:note_app_mobile/utilities/dialogs.dart';
@@ -18,12 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late Future<Note> myNote;
-  List<Note>? notes;
-  var isLoaded = true;
-  final textController = TextEditingController();
-  List<Note> dbNotes = [];
+  List<DatabaseNote> allNotes = [];
   late final NoteService _noteService;
+  bool loadedNotes = false;
 
   @override
   initState() {
@@ -35,7 +29,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   getData() async {
-    await _noteService.getAllNote();
+    var myNotes = await _noteService.getAllNote();
+    setState(() {
+      allNotes = myNotes;
+      loadedNotes = true;
+    });
     /* notes = await NoteService().getNotes();
     if (notes != null) {
       setState(() {
@@ -54,77 +52,60 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: StreamBuilder(
-            stream: _noteService.allNotes,
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                case ConnectionState.active:
-                  if (snapshot.hasData) {
-                    final allNotes = snapshot.data as List<DatabaseNote>;
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: allNotes.length,
-                            itemBuilder: (context, index) {
-                              final currentNote = allNotes[index];
-                              return ListTile(
-                                title: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      currentNote.title.toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Color.fromARGB(255, 4, 81, 119),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      currentNote.note,
-                                      maxLines: 1,
-                                      softWrap: true,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                                trailing: IconButton(
-                                    onPressed: () async {
-                                      var shouldDelete =
-                                          await showDeleteDialog(context);
-                                      debugPrint(
-                                          'about to delete note ${currentNote.id}');
-                                      debugPrint(shouldDelete.toString());
-                                      if (shouldDelete == true) {
-                                        await _noteService.deleteNote(
-                                            id: currentNote.id);
-                                      }
-                                    },
-                                    icon: const Icon(
-                                      Icons.delete,
-                                      color: Color.fromARGB(255, 88, 7, 7),
-                                    )),
-                                onTap: () {
-                                  debugPrint('get note details');
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (BuildContext context) {
-                                    return NoteDetails(note: currentNote);
-                                  }));
-                                },
-                              );
-                            },
-                          ),
+      body: loadedNotes
+          ? ListView.builder(
+              itemCount: allNotes.length,
+              itemBuilder: (context, index) {
+                final currentNote = allNotes[index];
+                debugPrint('after getting current not at list view');
+                return ListTile(
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "${index + 1}). ${currentNote.title.toUpperCase()}",
+                        style: const TextStyle(
+                          color: Color.fromARGB(255, 4, 81, 119),
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
-                    );
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-
-                default:
-                  return const CircularProgressIndicator();
-              }
-            }));
+                      ),
+                      Text(
+                        currentNote.note,
+                        maxLines: 1,
+                        softWrap: true,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                  trailing: IconButton(
+                      onPressed: () async {
+                        var shouldDelete = await showDeleteDialog(context);
+                        debugPrint('about to delete note ${currentNote.id}');
+                        debugPrint(shouldDelete.toString());
+                        if (shouldDelete == true) {
+                          await _noteService.deleteNote(id: currentNote.id);
+                          getData();
+                        }
+                      },
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Color.fromARGB(255, 88, 7, 7),
+                      )),
+                  onTap: () {
+                    debugPrint('get note details');
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (BuildContext context) {
+                      return NoteDetails(note: currentNote);
+                    }));
+                  },
+                );
+              },
+            )
+          : Container(
+              padding: const EdgeInsets.only(top: 10),
+              child: const LinearProgressIndicator(),
+            ),
+    );
   }
 
   /* Future<Note> getNote() async {

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:note_app_mobile/note_class.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
@@ -24,30 +23,15 @@ class NoteService {
   Database? _db;
   List<DatabaseNote> _notes = [];
 
-// create a singleton
-  static final NoteService _shared = NoteService._sharedInstance();
-  NoteService._sharedInstance() {
-    _notesStreamController = StreamController<List<DatabaseNote>>.broadcast(
-      onListen: () {
-        _notesStreamController.sink.add(_notes);
-      },
-    );
-  }
-  factory NoteService() => _shared;
-
-  late final StreamController<List<DatabaseNote>> _notesStreamController;
-
-  Stream<List<DatabaseNote>> get allNotes => _notesStreamController.stream;
-
   Future<void> _cacheNotes() async {
     final allNotes = await getAllNote();
     _notes = allNotes.toList();
-    _notesStreamController.add(_notes);
   }
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
     required String text,
+    required String title,
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -58,7 +42,7 @@ class NoteService {
     final updateCount = await db.update(
       notesTable,
       {
-        titleColumn: note.title,
+        titleColumn: title,
         noteColumn: text,
       },
       where: 'id = ?',
@@ -69,12 +53,11 @@ class NoteService {
     } else {
       final updatedNote = await getNote(id: note.id);
       _notes.removeWhere((note) => note.id == updatedNote.id);
-      _notesStreamController.add(_notes);
       return updatedNote;
     }
   }
 
-  Future<Iterable<DatabaseNote>> getAllNote() async {
+  Future<List<DatabaseNote>> getAllNote() async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
 
@@ -82,7 +65,15 @@ class NoteService {
       notesTable,
     );
 
-    final results = notes.map((n) => DatabaseNote.fromRow(n));
+    // final results = notes.map((n) => DatabaseNote.fromRow(n));
+    final results = List.generate(
+        notes.length,
+        (index) => DatabaseNote(
+            id: notes[index]['id'] as int,
+            title: notes[index]['title'] as String,
+            note: notes[index]['note'] as String));
+    // notes.map((n) => DatabaseNote.fromRow(n));
+    debugPrint('from get all notes method');
     return results;
   }
 
@@ -101,7 +92,6 @@ class NoteService {
     } else {
       final note = DatabaseNote.fromRow(results.first);
       _notes.removeWhere((note) => note.id == id);
-      _notesStreamController.add(_notes);
       return note;
     }
   }
@@ -129,7 +119,6 @@ class NoteService {
       note: note,
     );
     _notes.add(newNote);
-    _notesStreamController.add(_notes);
     return newNote;
   }
 
@@ -138,7 +127,6 @@ class NoteService {
     final db = _getDatabaseOrThrow();
     final numberOfDeletion = await db.delete(notesTable);
     _notes = [];
-    _notesStreamController.add(_notes);
     return numberOfDeletion;
   }
 
@@ -154,7 +142,6 @@ class NoteService {
       throw CouldNotDeleteUser();
     } else {
       _notes.removeWhere((note) => note.id == id);
-      _notesStreamController.add(_notes);
     }
   }
 

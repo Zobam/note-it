@@ -13,58 +13,60 @@ class NoteDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(note.title.toUpperCase())),
-      body: Column(
-        children: [
-          const SizedBox(height: 29),
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              note.title.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 29),
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                note.title.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey,
+                ),
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              note.note,
-              style: const TextStyle(fontSize: 18),
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                note.note,
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
-          ),
-          Image.asset('images/city1.png'),
-          Container(
-            padding: const EdgeInsets.only(top: 30),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context)
-                        .push(MaterialPageRoute(builder: (BuildContext contex) {
-                      return AddNote(
-                        note: note,
-                      );
-                    }));
-                  },
-                  child: const Text('Edit'),
-                ),
-                OutlinedButton(
-                  onPressed: () async {
-                    var shouldDelete = await showDeleteDialog(context);
-                    if (shouldDelete == true) {
-                      _noteService.deleteNote(id: note.id);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                  child: const Text('Delete'),
-                ),
-              ],
-            ),
-          )
-        ],
+            Image.asset('images/city1.png'),
+            Container(
+              padding: const EdgeInsets.only(top: 30),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                          MaterialPageRoute(builder: (BuildContext contex) {
+                        return AddNote(
+                          note: note,
+                        );
+                      }));
+                    },
+                    child: const Text('Edit'),
+                  ),
+                  OutlinedButton(
+                    onPressed: () async {
+                      var shouldDelete = await showDeleteDialog(context);
+                      if (shouldDelete == true) {
+                        _noteService.deleteNote(id: note.id);
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
