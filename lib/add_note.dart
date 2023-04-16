@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:note_app_mobile/main.dart';
 import 'package:note_app_mobile/note_class.dart';
@@ -18,6 +20,7 @@ class _AddNoteState extends State<AddNote> {
   late Note currentNote;
   DatabaseNote? _note;
   late final NoteService _notesService;
+  bool formIsValid = false;
 
   @override
   void initState() {
@@ -62,6 +65,12 @@ class _AddNoteState extends State<AddNote> {
     );
   }
 
+  void checkFormValidity(String text) {
+    setState(() {
+      formIsValid = text.length >= 2;
+    });
+  }
+
 /*   void _deleteNoteIfTextIsEmpty() {
     final note = _note;
     if (textController.text.isEmpty && note != null) {
@@ -88,6 +97,7 @@ class _AddNoteState extends State<AddNote> {
 
   @override
   Widget build(BuildContext context) {
+    String buttonText = widget.note == null ? 'Save Note' : 'Update Note';
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Note'),
@@ -119,16 +129,25 @@ class _AddNoteState extends State<AddNote> {
                 decoration: const InputDecoration(
                   hintText: 'start typing your note',
                 ),
+                onChanged: (value) {
+                  checkFormValidity(value);
+                },
               ),
-              ElevatedButton(
-                  onPressed: () async {
-                    await createNewNote();
-                    Navigator.of(context).push(
-                        MaterialPageRoute(builder: (BuildContext context) {
-                      return NoteApp();
-                    }));
-                  },
-                  child: const Text('Save Note')),
+              !formIsValid
+                  ? ElevatedButton(
+                      onPressed: null,
+                      child: Text(buttonText),
+                    )
+                  : ElevatedButton(
+                      onPressed: () async {
+                        await createNewNote();
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (BuildContext context) {
+                          return NoteApp();
+                        }));
+                      },
+                      child: Text(buttonText),
+                    ),
             ],
           ),
         ),
