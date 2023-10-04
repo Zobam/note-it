@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
@@ -31,7 +30,7 @@ class NoteService {
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
     required String text,
-    required String title,
+    String title = '',
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -69,11 +68,24 @@ class NoteService {
     final results = List.generate(
         notes.length,
         (index) => DatabaseNote(
-            id: notes[index]['id'] as int,
-            title: notes[index]['title'] as String,
-            note: notes[index]['note'] as String));
+              id: notes[index]['id'] as int,
+              title: notes[index]['title'] as String,
+              note: notes[index]['note'] as String,
+              uploadedAt: notes[index]['uploadedAt'] == null
+                  ? null
+                  : DateTime.parse(notes[index]['uploadedAt'] as String),
+              serverId: notes[index]['server_id'] == null
+                  ? null
+                  : notes[index]['server_id'] as int,
+              views: notes[index]['views'] as int,
+              updatedAt: notes[index]['updated_at'] == null
+                  ? null
+                  : DateTime.parse(notes[index]['updated_at'] as String),
+              createdAt: notes[index]['created_at'] == null
+                  ? null
+                  : DateTime.parse(notes[index]['created_at'] as String),
+            ));
     // notes.map((n) => DatabaseNote.fromRow(n));
-    debugPrint('from get all notes method');
     return results;
   }
 
@@ -96,27 +108,39 @@ class NoteService {
     }
   }
 
-  Future<DatabaseNote> createNote(
-      {required String title, required String note}) async {
+  Future<DatabaseNote> createNote({
+    String? title,
+    required String note,
+    String? serverId,
+    String? createdAt,
+    String? updateAt,
+  }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
     final results = await db.query(
       notesTable,
       limit: 1,
       where: 'title = ?',
-      whereArgs: [title.toLowerCase()],
+      whereArgs: [title?.toLowerCase()],
     );
     /* if (results.isNotEmpty) {
       throw NoteAlreadyExists();
     } */
-    final noteId = await db.insert(notesTable, {
-      titleColumn: title.toLowerCase(),
+    Map<String, dynamic> insertMap = {
+      titleColumn: title?.toLowerCase(),
       noteColumn: note.toLowerCase(),
-    });
+    };
+    if (serverId != null) {
+      insertMap[serverIdColumn] = serverId;
+      insertMap[createdAtColumn] = createdAt;
+      insertMap[updatedAtColumn] = updateAt;
+    }
+    final noteId = await db.insert(notesTable, insertMap);
     final newNote = DatabaseNote(
       id: noteId,
       title: title,
       note: note,
+      views: 0,
     );
     _notes.add(newNote);
     return newNote;
@@ -173,7 +197,7 @@ class NoteService {
       _db = db;
 
       const createNotesTable =
-          '''CREATE TABLE IF NOT EXISTS $notesTable($idColumn INTEGER PRIMARY KEY AUTOINCREMENT, $titleColumn TEXT, $noteColumn TEXT)''';
+          '''CREATE TABLE IF NOT EXISTS $notesTable($idColumn INTEGER PRIMARY KEY AUTOINCREMENT, $titleColumn TEXT, $noteColumn TEXT, $serverIdColumn INTEGER, $viewsColumn INTEGER DEFAULT 0, $uploadedAtColumn TIMESTAMP, $updatedAtColumn TIMESTAMP DEFAULT CURRENT_TIMESTAMP, $createdAtColumn TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''';
 
       await db.execute((createNotesTable));
       await _cacheNotes();
@@ -193,19 +217,53 @@ class NoteService {
   }
 }
 
-@immutable
+// @immutable
 class DatabaseNote {
   final int id;
-  final String title;
+  String? title;
   final String note;
+  final int? serverId;
+  final int views;
+  DateTime? uploadedAt;
+  DateTime? updatedAt;
+  DateTime? createdAt;
 
-  const DatabaseNote(
-      {required this.id, required this.title, required this.note});
+  DatabaseNote(
+      {required this.id,
+      this.title,
+      required this.note,
+      this.serverId,
+      required this.views,
+      this.uploadedAt,
+      this.updatedAt,
+      this.createdAt});
 
   DatabaseNote.fromRow(Map<String, Object?> map)
       : id = map[idColumn] as int,
         title = map[titleColumn] as String,
-        note = map[noteColumn] as String;
+        note = map[noteColumn] as String,
+        serverId = map[serverIdColumn] == null ? null : [serverIdColumn] as int,
+        views = map[viewsColumn] as int,
+        uploadedAt = map[uploadedAtColumn] == null
+            ? null
+            : map[uploadedAtColumn] as DateTime,
+        updatedAt = DateTime.parse(map[updatedAtColumn] as String),
+        createdAt = DateTime.parse(map[createdAtColumn] as String);
+
+  factory DatabaseNote.fromJson(Map<String, dynamic> json) {
+    return DatabaseNote(
+      id: json['id'],
+      title: json['title'],
+      note: json['note'],
+      serverId: json['server_id'],
+      views: json['views'],
+      uploadedAt: json['uploaded_at'] != null
+          ? DateTime.parse(json['uploaded_at'])
+          : null,
+      updatedAt: DateTime.parse(json['updated_at']),
+      createdAt: DateTime.parse(json['created_at']),
+    );
+  }
 
   @override
   String toString() => 'DatabaseNote(id: $id, title: $title, note: $note)';
@@ -223,3 +281,8 @@ const String notesTable = 'notes';
 const String idColumn = 'id';
 const String titleColumn = 'title';
 const String noteColumn = 'note';
+const String serverIdColumn = 'server_id';
+const String viewsColumn = 'views';
+const String uploadedAtColumn = 'uploaded_at';
+const String updatedAtColumn = 'updated_at';
+const String createdAtColumn = 'created_at';

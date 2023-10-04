@@ -12,8 +12,14 @@ void main() {
 
 class NoteApp extends StatelessWidget {
   NoteApp({Key? key}) : super(key: key);
-  var newNote =
-      Note(id: 2, title: 'first note', note: 'this is just the beginning');
+  final newNote = Note(
+    id: 2,
+    title: 'first note',
+    note: 'this is just the beginning',
+    uploaded: 1,
+    views: 0,
+  );
+
   @override
   Widget build(BuildContext context) {
     debugPrint(newNote.note);

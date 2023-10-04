@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:note_app_mobile/main.dart';
 import 'package:note_app_mobile/note_class.dart';

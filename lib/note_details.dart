@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:note_app_mobile/add_note.dart';
-import 'package:note_app_mobile/note_class.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:note_app_mobile/utilities/dialogs.dart';
 
@@ -12,20 +12,27 @@ class NoteDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(note.title.toUpperCase())),
+      appBar: AppBar(title: Text(note.title!.toUpperCase())),
       body: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 29),
             Container(
               padding: const EdgeInsets.all(20),
-              child: Text(
-                note.title.toUpperCase(),
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blueGrey,
-                ),
+              child: Column(
+                children: [
+                  Text(
+                    note.title == null ? '' : note.title!.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueGrey,
+                    ),
+                  ),
+                  Text(
+                    DateFormat.yMMMd().add_jm().format(note.createdAt!),
+                  ),
+                ],
               ),
             ),
             Container(
@@ -36,6 +43,32 @@ class NoteDetails extends StatelessWidget {
               ),
             ),
             Image.asset('images/city1.png'),
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const ColoredBox(
+                    color: Color.fromARGB(255, 4, 81, 119),
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        'Last modified: ',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      DateFormat.yMMMd().add_jm().format(note.updatedAt!),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             Container(
               padding: const EdgeInsets.only(top: 30),
               child: Row(
