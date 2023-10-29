@@ -1,15 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:note_app_mobile/models/note_model.dart';
 import 'package:note_app_mobile/note_details.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:note_app_mobile/utilities/dialogs.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-
-void main(List<String> args) {
-  runApp(const HomePage());
-}
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -48,7 +46,7 @@ class _HomePageState extends State<HomePage> {
     // get server notes
     var serverNotes = await http.get(Uri.parse('https://donzoby.com/api/test'));
     if (serverNotes.statusCode == 200) {
-      debugPrint(serverNotes.body);
+      // debugPrint(serverNotes.body);
       var payload = json.decode(serverNotes.body);
       for (var i = 0; i < payload['data'].length; i++) {
         try {
@@ -78,6 +76,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<NoteModel>();
     return Scaffold(
       body: loadedNotes
           ? Column(
@@ -89,11 +88,33 @@ class _HomePageState extends State<HomePage> {
                   const LinearProgressIndicator(),
                   const Text('Checking server for new notes ...'),
                 ],
+                if (appState.hasNewNotesOnServer == true) ...[
+                  Text(
+                    "You have ${appState.newNotesOnServer.length} new notes online.",
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      appState.addServerNotes();
+                    },
+                    icon: const Icon(Icons.download),
+                  ),
+                ],
+                if (appState.hasLocalNotes == true) ...[
+                  Text(
+                    "You have ${appState.localNotes.length} notes that are not uploaded.",
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      appState.uploadLocalNotes();
+                    },
+                    icon: const Icon(Icons.upload),
+                  ),
+                ],
                 Expanded(
                   child: ListView.builder(
-                    itemCount: allNotes.length,
+                    itemCount: appState.notes.length,
                     itemBuilder: (context, index) {
-                      final currentNote = allNotes[index];
+                      final currentNote = appState.notes[index];
                       return Container(
                         color: index.isOdd ? firstColor : secondColor,
                         child: ListTile(

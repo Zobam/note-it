@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
+import 'package:http/http.dart' as http;
 
 class DatabaseAlreadyOpenException implements Exception {}
 
@@ -29,8 +31,6 @@ class NoteService {
 
   Future<DatabaseNote> updateNote({
     required DatabaseNote note,
-    required String text,
-    String title = '',
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -40,10 +40,7 @@ class NoteService {
     // update db
     final updateCount = await db.update(
       notesTable,
-      {
-        titleColumn: title,
-        noteColumn: text,
-      },
+      note.toRow(),
       where: 'id = ?',
       whereArgs: [note.id],
     );
@@ -169,6 +166,42 @@ class NoteService {
     }
   }
 
+  Future<Map<dynamic, dynamic>> checkNewNote(int lastID) async {
+    var response = await http
+        .get(Uri.parse('https://donzoby.com/api/checknewnotes/$lastID'));
+    var returnVal = {};
+    if (response.statusCode == 200) {
+      var payload = json.decode(response.body);
+      returnVal['note_count'] = payload['note_count'];
+      returnVal['new_notes'] = payload['new_notes'];
+    }
+    return returnVal;
+  }
+
+  Future<List<DatabaseNote>> uploadNotes(List<DatabaseNote> localNotes) async {
+    List<DatabaseNote> updatedNotes = [];
+    var response = await http.post(
+      Uri.parse('https://donzoby.com/api/notes'),
+      headers: <String, String>{
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'name': 'Donzoby',
+        'localNotes': jsonEncode(
+          localNotes.map((e) => e.toJson()).toList(),
+        ),
+      }),
+    );
+    print(response.body.toString());
+    if (response.statusCode == 200) {
+      var payload = jsonDecode(response.body);
+      for (int i = 0; i < payload['updated_notes'].length; i++) {
+        updatedNotes.add(DatabaseNote.fromJson(payload['updated_notes'][i]));
+      }
+    }
+    return updatedNotes;
+  }
+
   Database _getDatabaseOrThrow() {
     final db = _db;
     if (db == null) {
@@ -242,7 +275,8 @@ class DatabaseNote {
       : id = map[idColumn] as int,
         title = map[titleColumn] as String,
         note = map[noteColumn] as String,
-        serverId = map[serverIdColumn] == null ? null : [serverIdColumn] as int,
+        serverId =
+            map[serverIdColumn] == null ? null : map[serverIdColumn] as int,
         views = map[viewsColumn] as int,
         uploadedAt = map[uploadedAtColumn] == null
             ? null
@@ -265,8 +299,28 @@ class DatabaseNote {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'note': note,
+        'views': views,
+        'created_at': createdAt.toString(),
+        'updated_at': updatedAt.toString(),
+      };
+
+  Map<String, dynamic> toRow() => {
+        'title': title,
+        'note': note,
+        'views': views,
+        'server_id': serverId,
+        'uploaded_at': uploadedAt.toString(),
+        'created_at': createdAt.toString(),
+        'updated_at': updatedAt.toString(),
+      };
+
   @override
-  String toString() => 'DatabaseNote(id: $id, title: $title, note: $note)';
+  String toString() =>
+      'DatabaseNote(id: $id, title: $title, note: $note, createdAt: $createdAt, uploadedAt: $uploadedAt)';
 
   @override
   bool operator ==(covariant DatabaseNote other) => id == other.id;

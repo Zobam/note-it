@@ -39,11 +39,14 @@ class Note {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'title': title,
       'note': note,
+      'views': views,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
     };
   }
 

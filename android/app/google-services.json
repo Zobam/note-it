@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "783828060486",
+    "project_id": "note-it-3b607",
+    "storage_bucket": "note-it-3b607.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783828060486:android:03b70d2e4ff0e1b6c1fd47",
+        "android_client_info": {
+          "package_name": "com.donzoby.note_app_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6n8pMbJxyvVPAMTQU_S6Ir1QsIBlkQRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783828060486:android:c7fa9b41f1a148f6c1fd47",
+        "android_client_info": {
+          "package_name": "com.example.note_app_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6n8pMbJxyvVPAMTQU_S6Ir1QsIBlkQRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

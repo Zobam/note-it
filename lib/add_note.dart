@@ -54,7 +54,8 @@ class _AddNoteState extends State<AddNote> {
     if (existingNote != null) {
       debugPrint('updating note');
       return _notesService.updateNote(
-          note: existingNote, text: text, title: title);
+        note: existingNote,
+      );
     }
     debugPrint('creating new note');
     return _notesService.createNote(

@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:note_app_mobile/about.dart';
 import 'package:note_app_mobile/add_note.dart';
 import 'package:note_app_mobile/home_page.dart';
+import 'package:note_app_mobile/models/note_model.dart';
 import 'package:note_app_mobile/note_class.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(NoteApp());
 }
 
@@ -23,12 +29,15 @@ class NoteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint(newNote.note);
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.indigo,
+    return ChangeNotifierProvider(
+      create: (context) => NoteModel(),
+      child: MaterialApp(
+        theme: ThemeData(
+          primarySwatch: Colors.indigo,
+        ),
+        home: const NotePage(),
+        debugShowCheckedModeBanner: false,
       ),
-      home: const NotePage(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -41,7 +50,7 @@ class NotePage extends StatefulWidget {
 
 class _NotePageState extends State<NotePage> {
   var currentPage = 0;
-  List<Widget> pages = [HomePage(), About()];
+  List<Widget> pages = const [HomePage(), About()];
   var titles = ['Note It', 'About NoteIt'];
 
   @override
