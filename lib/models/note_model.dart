@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:http/http.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 
 class NoteModel extends ChangeNotifier {
@@ -81,5 +82,25 @@ class NoteModel extends ChangeNotifier {
       hasLocalNotes = false;
       notifyListeners();
     }
+  }
+
+  Future<DatabaseNote> createNewNote(existingNote, text, title) async {
+    var response;
+    if (existingNote != null) {
+      debugPrint('updating note');
+      response = await _noteService.updateNote(
+        note: existingNote,
+      );
+    }
+    debugPrint('creating new note');
+    response = await _noteService.createNote(
+      title: title,
+      note: text,
+    );
+    _localNotes.clear();
+    _notes.clear();
+    _newNotesOnServer.clear();
+    await getNotes();
+    return response;
   }
 }

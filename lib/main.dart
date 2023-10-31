@@ -13,7 +13,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(NoteApp());
+  runApp(ChangeNotifierProvider(
+    create: (context) => NoteModel(),
+    child: NoteApp(),
+  ));
 }
 
 class NoteApp extends StatelessWidget {
@@ -29,15 +32,12 @@ class NoteApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint(newNote.note);
-    return ChangeNotifierProvider(
-      create: (context) => NoteModel(),
-      child: MaterialApp(
-        theme: ThemeData(
-          primarySwatch: Colors.indigo,
-        ),
-        home: const NotePage(),
-        debugShowCheckedModeBanner: false,
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
       ),
+      home: const NotePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:note_app_mobile/main.dart';
+import 'package:note_app_mobile/models/note_model.dart';
 import 'package:note_app_mobile/note_class.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
+import 'package:provider/provider.dart';
 
 class AddNote extends StatefulWidget {
   final DatabaseNote? note;
@@ -16,13 +18,10 @@ class _AddNoteState extends State<AddNote> {
   late final TextEditingController textController;
   late final TextEditingController titleController;
   late Note currentNote;
-  DatabaseNote? _note;
-  late final NoteService _notesService;
   bool formIsValid = false;
 
   @override
   void initState() {
-    _notesService = NoteService();
     textController = TextEditingController();
     titleController = TextEditingController();
     textController.text = widget.note?.note ?? '';
@@ -30,24 +29,7 @@ class _AddNoteState extends State<AddNote> {
     super.initState();
   }
 
-  /* void _textControllerListener() async {
-    final note = _note;
-    if (note == null) {
-      return;
-    }
-    final text = textController.text;
-    _note = await _notesService.updateNote(
-      note: note,
-      text: text,
-    );
-  } */
-
-  /*  void _setupTextControllerListener() {
-    textController.removeListener(_textControllerListener);
-    textController.addListener(_textControllerListener);
-  } */
-
-  Future<DatabaseNote> createNewNote() async {
+  /* Future<DatabaseNote> createNewNote() async {
     final existingNote = widget.note;
     final text = textController.text;
     final title = titleController.text;
@@ -62,7 +44,7 @@ class _AddNoteState extends State<AddNote> {
       title: title,
       note: text,
     );
-  }
+  } */
 
   void checkFormValidity(String text) {
     setState(() {
@@ -70,33 +52,14 @@ class _AddNoteState extends State<AddNote> {
     });
   }
 
-/*   void _deleteNoteIfTextIsEmpty() {
-    final note = _note;
-    if (textController.text.isEmpty && note != null) {
-      _notesService.deleteNote(id: note.id);
-    }
-  } */
-
-  /*  void _saveNoteIfTextIsNotEmpty() async {
-    final note = _note;
-    final text = textController.text;
-    if (note != null && text.isNotEmpty) {
-      // await _notesService.createNote(title: 'title', note: text);
-      await _notesService.updateNote(note: note, text: text);
-    }
-  } */
-
   @override
   void dispose() {
-    // _deleteNoteIfTextIsEmpty();
-    // _saveNoteIfTextIsNotEmpty();
     textController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    String buttonText = widget.note == null ? 'Save Note' : 'Update Note';
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add New Note'),
@@ -135,17 +98,23 @@ class _AddNoteState extends State<AddNote> {
               !formIsValid
                   ? ElevatedButton(
                       onPressed: null,
-                      child: Text(buttonText),
+                      child: Text(
+                          widget.note == null ? 'Save Note' : 'Update Note'),
                     )
                   : ElevatedButton(
                       onPressed: () async {
-                        await createNewNote();
+                        var appState =
+                            Provider.of<NoteModel>(context, listen: false);
+                        await appState.createNewNote(widget.note,
+                            textController.text, titleController.text);
                         Navigator.of(context).push(
-                            MaterialPageRoute(builder: (BuildContext context) {
-                          return NoteApp();
-                        }));
+                          MaterialPageRoute(builder: (BuildContext context) {
+                            return NoteApp();
+                          }),
+                        );
                       },
-                      child: Text(buttonText),
+                      child: Text(
+                          widget.note == null ? 'Save Note' : 'Update Note'),
                     ),
             ],
           ),
