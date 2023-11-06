@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:note_app_mobile/add_note.dart';
+import 'package:note_app_mobile/models/note_model.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:note_app_mobile/utilities/dialogs.dart';
+import 'package:provider/provider.dart';
 
 class NoteDetails extends StatelessWidget {
   final DatabaseNote note;
@@ -87,9 +89,11 @@ class NoteDetails extends StatelessWidget {
                   ),
                   OutlinedButton(
                     onPressed: () async {
+                      var appState =
+                          Provider.of<NoteModel>(context, listen: false);
                       var shouldDelete = await showDeleteDialog(context);
                       if (shouldDelete == true) {
-                        _noteService.deleteNote(id: note.id);
+                        await appState.deleteNote(note.id);
                         Navigator.of(context).pop();
                       }
                     },
