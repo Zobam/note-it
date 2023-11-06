@@ -133,12 +133,7 @@ class NoteService {
       insertMap[updatedAtColumn] = updateAt;
     }
     final noteId = await db.insert(notesTable, insertMap);
-    final newNote = DatabaseNote(
-      id: noteId,
-      title: title,
-      note: note,
-      views: 0,
-    );
+    final newNote = await getNote(id: noteId);
     _notes.add(newNote);
     return newNote;
   }

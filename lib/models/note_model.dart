@@ -97,10 +97,7 @@ class NoteModel extends ChangeNotifier {
       title: title,
       note: text,
     );
-    _localNotes.clear();
-    _notes.clear();
-    _newNotesOnServer.clear();
-    await getNotes();
+    _notes.insert(0, response);
     return response;
   }
 }
