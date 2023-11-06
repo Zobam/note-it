@@ -174,15 +174,15 @@ class _HomePageState extends State<HomePage> {
                           ),
                           trailing: IconButton(
                               onPressed: () async {
+                                var appState = Provider.of<NoteModel>(context,
+                                    listen: false);
                                 var shouldDelete =
                                     await showDeleteDialog(context);
                                 debugPrint(
                                     'about to delete note ${currentNote.id}');
                                 debugPrint(shouldDelete.toString());
                                 if (shouldDelete == true) {
-                                  await _noteService.deleteNote(
-                                      id: currentNote.id);
-                                  getData();
+                                  await appState.deleteNote(currentNote.id);
                                 }
                               },
                               icon: const Icon(

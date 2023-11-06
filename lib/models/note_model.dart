@@ -100,4 +100,10 @@ class NoteModel extends ChangeNotifier {
     _notes.insert(0, response);
     return response;
   }
+
+  Future<void> deleteNote(int id) async {
+    _notes.removeWhere((element) => element.id == id);
+    notifyListeners();
+    await _noteService.deleteNote(id: id);
+  }
 }
