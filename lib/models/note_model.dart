@@ -84,20 +84,24 @@ class NoteModel extends ChangeNotifier {
     }
   }
 
-  Future<DatabaseNote> createNewNote(existingNote, text, title) async {
+  Future<DatabaseNote> createNewNote(
+      DatabaseNote? existingNote, text, title) async {
     var response;
     if (existingNote != null) {
       debugPrint('updating note');
+      existingNote.note = text;
+      existingNote.updatedAt = DateTime.now();
       response = await _noteService.updateNote(
         note: existingNote,
       );
+    } else {
+      debugPrint('creating new note');
+      response = await _noteService.createNote(
+        title: title,
+        note: text,
+      );
+      _notes.insert(0, response);
     }
-    debugPrint('creating new note');
-    response = await _noteService.createNote(
-      title: title,
-      note: text,
-    );
-    _notes.insert(0, response);
     return response;
   }
 

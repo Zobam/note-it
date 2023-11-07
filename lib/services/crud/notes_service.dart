@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' show join;
@@ -48,7 +49,7 @@ class NoteService {
       throw CouldNotUpdateNote();
     } else {
       final updatedNote = await getNote(id: note.id);
-      _notes.removeWhere((note) => note.id == updatedNote.id);
+      // _notes.removeWhere((note) => note.id == updatedNote.id);
       return updatedNote;
     }
   }
@@ -99,8 +100,8 @@ class NoteService {
     if (results.isEmpty) {
       throw CouldNotFindNote();
     } else {
+      debugPrint(results.first.toString());
       final note = DatabaseNote.fromRow(results.first);
-      _notes.removeWhere((note) => note.id == id);
       return note;
     }
   }
@@ -249,7 +250,7 @@ class NoteService {
 class DatabaseNote {
   final int id;
   String? title;
-  final String note;
+  String note;
   final int? serverId;
   final int views;
   DateTime? uploadedAt;
@@ -273,9 +274,10 @@ class DatabaseNote {
         serverId =
             map[serverIdColumn] == null ? null : map[serverIdColumn] as int,
         views = map[viewsColumn] as int,
-        uploadedAt = map[uploadedAtColumn] == null
-            ? null
-            : map[uploadedAtColumn] as DateTime,
+        // uploadedAt = map[updatedAtColumn],
+        uploadedAt = map[uploadedAtColumn] == Null
+            ? DateTime.parse(map[uploadedAtColumn] as String)
+            : null,
         updatedAt = DateTime.parse(map[updatedAtColumn] as String),
         createdAt = DateTime.parse(map[createdAtColumn] as String);
 
