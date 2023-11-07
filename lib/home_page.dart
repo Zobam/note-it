@@ -190,10 +190,13 @@ class _HomePageState extends State<HomePage> {
                                 color: Color.fromARGB(255, 125, 42, 42),
                               )),
                           onTap: () {
-                            Navigator.of(context).push(MaterialPageRoute(
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
                                 builder: (BuildContext context) {
-                              return NoteDetails(note: currentNote);
-                            }));
+                                  return NoteDetails(note: currentNote);
+                                },
+                              ),
+                            );
                           },
                         ),
                       );

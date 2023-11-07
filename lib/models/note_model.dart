@@ -101,11 +101,16 @@ class NoteModel extends ChangeNotifier {
         note: text,
       );
       _notes.insert(0, response);
+      _localNotes.add(response);
     }
     return response;
   }
 
   Future<void> deleteNote(int id) async {
+    if (_notes.firstWhere((element) => element.id == id).uploadedAt == null) {
+      debugPrint('is not uploaded');
+      _localNotes.removeWhere((element) => element.id == id);
+    }
     _notes.removeWhere((element) => element.id == id);
     notifyListeners();
     await _noteService.deleteNote(id: id);

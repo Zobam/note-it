@@ -71,6 +71,15 @@ class NoteDetails extends StatelessWidget {
                 ],
               ),
             ),
+            if (note.uploadedAt == null) ...[
+              Center(
+                child: Container(
+                  color: Color.fromARGB(255, 244, 237, 237),
+                  padding: const EdgeInsets.all(6),
+                  child: const Text('Note NOT uploaded'),
+                ),
+              ),
+            ],
             Container(
               padding: const EdgeInsets.only(top: 30),
               child: Row(
