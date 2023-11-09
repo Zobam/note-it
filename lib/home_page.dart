@@ -14,6 +14,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final Color firstColor = Colors.white;
   final Color secondColor = const Color.fromARGB(146, 235, 235, 235);
+  final Color uploadedColor = const Color.fromARGB(113, 76, 175, 79);
+  final Color titleColor = const Color.fromARGB(255, 4, 81, 119);
 
   @override
   Widget build(BuildContext context) {
@@ -57,15 +59,23 @@ class _HomePageState extends State<HomePage> {
                     itemBuilder: (context, index) {
                       final currentNote = appState.notes[index];
                       return Container(
-                        color: index.isOdd ? firstColor : secondColor,
+                        margin: const EdgeInsets.only(top: 4),
+                        decoration: BoxDecoration(
+                          color: index.isOdd ? firstColor : secondColor,
+                          border: Border(
+                              left: BorderSide(
+                            width: currentNote.serverId == null ? 0 : 8,
+                            color: uploadedColor,
+                          )),
+                        ),
                         child: ListTile(
                           title: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "${index + 1}). ${currentNote.title?.toUpperCase()}",
-                                style: const TextStyle(
-                                  color: Color.fromARGB(255, 4, 81, 119),
+                                style: TextStyle(
+                                  color: titleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                                 maxLines: 1,

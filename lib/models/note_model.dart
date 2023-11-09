@@ -54,6 +54,16 @@ class NoteModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool noteHasLocalEdit(DatabaseNote note) {
+    bool returnVal = false;
+    if (note.serverId != null) {
+      final DateTime updatedTime = DateTime.parse(note.updatedAt.toString());
+      final DateTime uploadedTime = DateTime.parse(note.uploadedAt.toString());
+      returnVal = updatedTime.isAfter(uploadedTime);
+    }
+    return returnVal;
+  }
+
   addServerNotes() {
     if (_newNotesOnServer.isNotEmpty) {
       // _notes.addAll(_newNotesOnServer);
