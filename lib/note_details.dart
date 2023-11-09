@@ -76,7 +76,8 @@ class NoteDetails extends StatelessWidget {
                 child: Container(
                   color: Color.fromARGB(255, 244, 237, 237),
                   padding: const EdgeInsets.all(6),
-                  child: Text('Note NOT uploaded ${note.serverId}'),
+                  child: Text(
+                      'Note NOT uploaded ${note.serverId}, uploadedAt: ${note.uploadedAt}'),
                 ),
               ),
             ],

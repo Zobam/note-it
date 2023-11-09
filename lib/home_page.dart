@@ -65,7 +65,9 @@ class _HomePageState extends State<HomePage> {
                           border: Border(
                               left: BorderSide(
                             width: currentNote.serverId == null ? 0 : 8,
-                            color: uploadedColor,
+                            color: appState.noteHasLocalEdit(currentNote)
+                                ? titleColor
+                                : uploadedColor,
                           )),
                         ),
                         child: ListTile(

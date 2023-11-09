@@ -39,6 +39,8 @@ class NoteService {
     await getNote(id: note.id);
 
     // update db
+    debugPrint('----toRow return----');
+    debugPrint('${note.toRow()}');
     final updateCount = await db.update(
       notesTable,
       note.toRow(),
@@ -61,28 +63,12 @@ class NoteService {
     final notes = await db.query(
       notesTable,
     );
+    debugPrint('===all notes===');
+    debugPrint('$notes');
 
     // final results = notes.map((n) => DatabaseNote.fromRow(n));
     final results = List.generate(
-        notes.length,
-        (index) => DatabaseNote(
-              id: notes[index]['id'] as int,
-              title: notes[index]['title'] as String,
-              note: notes[index]['note'] as String,
-              uploadedAt: notes[index]['uploadedAt'] == null
-                  ? null
-                  : DateTime.parse(notes[index]['uploadedAt'] as String),
-              serverId: notes[index]['server_id'] == null
-                  ? null
-                  : notes[index]['server_id'] as int,
-              views: notes[index]['views'] as int,
-              updatedAt: notes[index]['updated_at'] == null
-                  ? null
-                  : DateTime.parse(notes[index]['updated_at'] as String),
-              createdAt: notes[index]['created_at'] == null
-                  ? null
-                  : DateTime.parse(notes[index]['created_at'] as String),
-            ));
+        notes.length, (index) => DatabaseNote.fromRow(notes[index]));
     // notes.map((n) => DatabaseNote.fromRow(n));
     return results;
   }
@@ -194,7 +180,8 @@ class NoteService {
     if (response.statusCode == 200) {
       var payload = jsonDecode(response.body);
       for (int i = 0; i < payload['updated_notes'].length; i++) {
-        updatedNotes.add(DatabaseNote.fromJson(payload['updated_notes'][i]));
+        DatabaseNote note = DatabaseNote.fromJson(payload['updated_notes'][i]);
+        updatedNotes.add(note);
       }
     }
     return updatedNotes;
@@ -277,7 +264,7 @@ class DatabaseNote {
             map[serverIdColumn] == null ? null : map[serverIdColumn] as int,
         views = map[viewsColumn] as int,
         // uploadedAt = map[updatedAtColumn],
-        uploadedAt = map[uploadedAtColumn] == Null
+        uploadedAt = map[uploadedAtColumn] != Null
             ? DateTime.parse(map[uploadedAtColumn] as String)
             : null,
         updatedAt = DateTime.parse(map[updatedAtColumn] as String),

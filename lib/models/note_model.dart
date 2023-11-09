@@ -5,7 +5,7 @@ class NoteModel extends ChangeNotifier {
   final List<DatabaseNote> _notes = [];
   final NoteService _noteService = NoteService();
   bool hasNewNotesOnServer = false;
-  bool hasLocalNotes = false;
+  // bool hasLocalNotes = false;
   bool checkingServerNotes = true;
   bool loadingLocalNotes = true;
   final List<DatabaseNote> _newNotesOnServer = [];
@@ -18,6 +18,7 @@ class NoteModel extends ChangeNotifier {
   get notes => _notes;
   get newNotesOnServer => _newNotesOnServer;
   get localNotes => _localNotes;
+  get hasLocalNotes => _localNotes.isNotEmpty;
 
   getNotes() async {
     _notes.addAll(await _noteService.getAllNote());
@@ -27,7 +28,6 @@ class NoteModel extends ChangeNotifier {
     );
     if (localNotes.isNotEmpty) {
       _localNotes.addAll(localNotes);
-      hasLocalNotes = true;
     }
     notifyListeners();
     checkServerNotes();
@@ -56,7 +56,7 @@ class NoteModel extends ChangeNotifier {
 
   bool noteHasLocalEdit(DatabaseNote note) {
     bool returnVal = false;
-    if (note.serverId != null) {
+    if (note.serverId != null && note.uploadedAt != null) {
       final DateTime updatedTime = DateTime.parse(note.updatedAt.toString());
       final DateTime uploadedTime = DateTime.parse(note.uploadedAt.toString());
       returnVal = updatedTime.isAfter(uploadedTime);
@@ -94,7 +94,6 @@ class NoteModel extends ChangeNotifier {
         _noteService.updateNote(note: results[i]);
       }
       _localNotes.clear();
-      hasLocalNotes = false;
       notifyListeners();
     }
   }
@@ -104,6 +103,7 @@ class NoteModel extends ChangeNotifier {
     var response;
     if (existingNote != null) {
       debugPrint('updating note');
+      debugPrint('$existingNote');
       existingNote.note = text;
       existingNote.updatedAt = DateTime.now();
       response = await _noteService.updateNote(
