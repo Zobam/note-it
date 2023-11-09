@@ -112,6 +112,7 @@ class NoteService {
     String? serverId,
     String? createdAt,
     String? updateAt,
+    String? uploadedAt,
   }) async {
     await _ensureDbIsOpen();
     final db = _getDatabaseOrThrow();
@@ -130,6 +131,7 @@ class NoteService {
     };
     if (serverId != null) {
       insertMap[serverIdColumn] = serverId;
+      insertMap[uploadedAtColumn] = uploadedAt;
       insertMap[createdAtColumn] = createdAt;
       insertMap[updatedAtColumn] = updateAt;
     }

@@ -1,11 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:note_app_mobile/models/note_model.dart';
 import 'package:note_app_mobile/note_details.dart';
-import 'package:note_app_mobile/services/crud/notes_service.dart';
 import 'package:note_app_mobile/utilities/dialogs.dart';
-import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -16,75 +12,20 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<DatabaseNote> allNotes = [];
-  late final NoteService _noteService;
-  bool loadedNotes = false;
-  var checkedServer = false;
-  int lastLocalId = 0;
-  late List<DatabaseNote> apiNotes;
   final Color firstColor = Colors.white;
-  final Color secondColor = Color.fromARGB(146, 235, 235, 235);
-
-  @override
-  initState() {
-    _noteService = NoteService();
-    super.initState();
-    apiNotes = [];
-    getData();
-  }
-
-  getData() async {
-    var myNotes = await _noteService.getAllNote();
-    debugPrint(myNotes.toString());
-    setState(() {
-      allNotes = myNotes;
-      loadedNotes = true;
-      int localNotesLength = allNotes.length;
-      lastLocalId =
-          localNotesLength > 0 ? allNotes[localNotesLength - 1].id : 0;
-    });
-    // get server notes
-    var serverNotes = await http.get(Uri.parse('https://donzoby.com/api/test'));
-    if (serverNotes.statusCode == 200) {
-      // debugPrint(serverNotes.body);
-      var payload = json.decode(serverNotes.body);
-      for (var i = 0; i < payload['data'].length; i++) {
-        try {
-          DatabaseNote note = DatabaseNote.fromJson(payload['data'][i]);
-          myNotes.add(note);
-          if (note.serverId != null && note.serverId! > lastLocalId) {
-            /* await _noteService.createNote(
-                note: note.note,
-                serverId: note.id.toString(),
-                title: note.title); */
-            debugPrint(
-                'save the note into local db since it is not saved already');
-          }
-        } on Exception catch (e) {
-          debugPrint(e.toString());
-        }
-      }
-      setState(() {
-        checkedServer = true;
-        allNotes = myNotes;
-      });
-      debugPrint('The size of the api notes is ${apiNotes.length}');
-    } else {
-      throw Exception('Failed to load notes');
-    }
-  }
+  final Color secondColor = const Color.fromARGB(146, 235, 235, 235);
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<NoteModel>();
     return Scaffold(
-      body: loadedNotes
+      body: !appState.loadingLocalNotes
           ? Column(
               children: [
                 const SizedBox(
                   height: 20,
                 ),
-                if (checkedServer == false) ...[
+                if (appState.checkingServerNotes == true) ...[
                   const LinearProgressIndicator(),
                   const Text('Checking server for new notes ...'),
                 ],
@@ -211,14 +152,4 @@ class _HomePageState extends State<HomePage> {
             ),
     );
   }
-
-  /* Future<Note> getNote() async {
-    const api_url = 'https://www.donzoby.com/api/test';
-    final response = await http.get(Uri.parse(api_url));
-    if (response.statusCode == 200) {
-      return Note.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception("Failed to load note");
-    }
-  } */
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:http/http.dart';
 import 'package:note_app_mobile/services/crud/notes_service.dart';
 
 class NoteModel extends ChangeNotifier {
@@ -7,6 +6,8 @@ class NoteModel extends ChangeNotifier {
   final NoteService _noteService = NoteService();
   bool hasNewNotesOnServer = false;
   bool hasLocalNotes = false;
+  bool checkingServerNotes = true;
+  bool loadingLocalNotes = true;
   final List<DatabaseNote> _newNotesOnServer = [];
   final List<DatabaseNote> _localNotes = [];
 
@@ -20,6 +21,7 @@ class NoteModel extends ChangeNotifier {
 
   getNotes() async {
     _notes.addAll(await _noteService.getAllNote());
+    loadingLocalNotes = false;
     var localNotes = _notes.where(
       (element) => element.serverId == null,
     );
@@ -27,6 +29,7 @@ class NoteModel extends ChangeNotifier {
       _localNotes.addAll(localNotes);
       hasLocalNotes = true;
     }
+    notifyListeners();
     checkServerNotes();
   }
 
@@ -41,13 +44,14 @@ class NoteModel extends ChangeNotifier {
       }
     }
     var result = await _noteService.checkNewNote(lastID);
+    checkingServerNotes = false;
     if (result['note_count'] > 0) {
       hasNewNotesOnServer = true;
       for (int i = 0; i < result['new_notes'].length; i++) {
         _newNotesOnServer.add(DatabaseNote.fromJson(result['new_notes'][i]));
       }
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   addServerNotes() {
@@ -59,7 +63,8 @@ class NoteModel extends ChangeNotifier {
           note: currentNote.note,
           title: currentNote.title,
           serverId: currentNote.id.toString(),
-          createdAt: currentNote.createdAt as String,
+          uploadedAt: currentNote.createdAt.toString(),
+          createdAt: currentNote.createdAt.toString(),
           updateAt: currentNote.updatedAt.toString(),
         );
         _notes.add(_newNotesOnServer[i]);

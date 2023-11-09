@@ -1,9 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-void main(List<String> args) {
-  const About();
-}
 
 class About extends StatelessWidget {
   const About({super.key});
