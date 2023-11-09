@@ -264,9 +264,7 @@ class DatabaseNote {
             map[serverIdColumn] == null ? null : map[serverIdColumn] as int,
         views = map[viewsColumn] as int,
         // uploadedAt = map[updatedAtColumn],
-        uploadedAt = map[uploadedAtColumn] != Null
-            ? DateTime.parse(map[uploadedAtColumn] as String)
-            : null,
+        uploadedAt = DateTime.tryParse(map[uploadedAtColumn] as String),
         updatedAt = DateTime.parse(map[updatedAtColumn] as String),
         createdAt = DateTime.parse(map[createdAtColumn] as String);
 
